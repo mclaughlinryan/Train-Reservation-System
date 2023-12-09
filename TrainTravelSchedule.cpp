@@ -1,16 +1,22 @@
 #include "TrainTravelSchedule.h"
+#include <regex>
 #include <fstream>
 #include <sstream>
 
 // Prompts administrative user for travel schedule information
 void TrainTravelSchedule::GetTravelInformation() {
+	std::string attribute;
 	std::cout << "Enter the details of the travel route.\n";
 	std::cout << "Train name: ";
-	std::cin >> trainName;
+	std::cin.ignore();
+	getline(std::cin, attribute, '\n');
+	std::strcpy((*this).trainName, attribute.c_str());
 	std::cout << "Boarding point: ";
-	std::cin >> boardingPoint;
+	getline(std::cin, attribute, '\n');
+	std::strcpy((*this).boardingPoint, attribute.c_str());
 	std::cout << "Destination point: ";
-	std::cin >> destinationPoint;
+	getline(std::cin, attribute, '\n');
+	std::strcpy((*this).destinationPoint, attribute.c_str());
 	std::cout << "Number of seats on train: ";
 	std::cin >> totalSeats;
 	availableSeats = totalSeats;
@@ -18,7 +24,7 @@ void TrainTravelSchedule::GetTravelInformation() {
 	std::cin >> trainFare;
 	std::cout << "Date of travel with month (1-12), day (1-31), and year (e.g. 2022): ";
 	std::cin >> t.tm_mon >> t.tm_mday >> t.tm_year;
-	std::cout << "Time of department with hour (0-23) and minute (0-59): ";
+	std::cout << "Time of departure with hour (0-23) and minute (0-59): ";
 	std::cin >> t.tm_hour >> t.tm_min;
 	std::cout << "Travel time (hours-minutes): ";
 	std::cin >> durationHr >> durationMin;
@@ -105,13 +111,24 @@ void TrainTravelSchedule::DisplayTravelInformation(int lastSchedule) const {
 void TrainTravelSchedule::LoadScheduleInformation(std::string& scheduleInformation) {
 	std::istringstream inputStringStream(scheduleInformation);
 	std::string attribute;
+	std::regex location(" \\(([[:alpha:]]+)\\)$");
 	getline(inputStringStream, attribute, ',');
 	(*this).travelScheduleID = std::stoi(attribute);
 	getline(inputStringStream, attribute, ',');
 	std::strcpy((*this).trainName, attribute.c_str());
 	getline(inputStringStream, attribute, ',');
+
+    if (regex_search(attribute, location)) {
+        attribute = std::regex_replace(attribute, location, ", $1");
+	}
+
 	std::strcpy((*this).boardingPoint, attribute.c_str());
 	getline(inputStringStream, attribute, ',');
+
+    if (regex_search(attribute, location)) {
+		attribute = std::regex_replace(attribute, location, ", $1");
+	}
+
 	std::strcpy((*this).destinationPoint, attribute.c_str());
 	getline(inputStringStream, attribute, ',');
 	(*this).availableSeats = std::stoi(attribute);
@@ -142,6 +159,11 @@ void TrainTravelSchedule::LoadScheduleInformation(std::string& scheduleInformati
 
 // Writes travel schedule data to a file
 void TrainTravelSchedule::WriteScheduleInformation(std::ofstream& out) {
+	std::string boardingPointString;
+	std::string destinationPointString;
+	std::regex location(", ([[:alpha:]]+)$");
+	boardingPointString = boardingPoint;
+	destinationPointString = destinationPoint;
     std::stringstream trainFareStringStream;
 	trainFareStringStream << std::fixed << std::setprecision(2) << (*this).trainFare;
 	std::string trainFareStringFloat = trainFareStringStream.str();
@@ -153,7 +175,19 @@ void TrainTravelSchedule::WriteScheduleInformation(std::ofstream& out) {
 	const std::string travelTimeString = travelHrString + ":" + travelMinString;
 	const std::string travelDurationString = (std::to_string((*this).durationHr)) + "h" + (std::to_string((*this).durationMin)) + "m";
 
-	out << (*this).travelScheduleID << "," << (*this).trainName << "," << (*this).boardingPoint << ","
-	    << (*this).destinationPoint << "," << (*this).availableSeats << "," << "$" << trainFareStringFloat << ","
-	    << travelDateString << "," << travelTimeString << "," << travelDurationString << "\n";
+	if (regex_search(boardingPointString, location)) {
+		boardingPointString = std::regex_replace(boardingPointString, location, ", ($1)");
+	}
+
+	boardingPointString.erase(std::remove(boardingPointString.begin(), boardingPointString.end(), ','), boardingPointString.end());
+
+	if (regex_search(destinationPointString, location)) {
+			destinationPointString = std::regex_replace(destinationPointString, location, ", ($1)");
+	}
+
+	destinationPointString.erase(std::remove(destinationPointString.begin(), destinationPointString.end(), ','), destinationPointString.end());
+
+	out << (*this).travelScheduleID << "," << (*this).trainName << "," << boardingPointString << ","
+	<< destinationPointString << "," << (*this).availableSeats << "," << "$" << trainFareStringFloat << ","
+	<< travelDateString << "," << travelTimeString << "," << travelDurationString << "\n";
 }
