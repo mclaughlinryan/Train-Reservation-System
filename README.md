@@ -1,3 +1,11 @@
 # Train-Reservation-System
 
-This is an application that allows users to make reservations for train travel routes and allows administrative users to add and remove train travel routes.
+This application allows users to make reservations for train travel routes and select the number of seats to reserve.
+
+The user can select an option from a menu:
+- Make a reservation
+- Cancel a reservation
+- Display all travel schedules
+- Display account information
+- Delete account
+- Return to main menu
