@@ -2,7 +2,7 @@
 
 This application allows users to make reservations for train travel routes and select the number of seats to reserve.
 
-The user can select an option from a menu:
+The user can select one of the following menu options:
 - Make a reservation
 - Cancel a reservation
 - Display all travel schedules
