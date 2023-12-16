@@ -8,4 +8,4 @@ The user can select one of the following menu options:
 - Display all travel schedules
 - Display account information
 - Delete account
-- Return to main menu
+- Return to the main menu
